@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "8440409751",
+    "firebase_url": "https://walletwizard-f1ed8-default-rtdb.firebaseio.com",
+    "project_id": "walletwizard-f1ed8",
+    "storage_bucket": "walletwizard-f1ed8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:8440409751:android:9bfbf51c39a421676983d2",
+        "android_client_info": {
+          "package_name": "com.example.walletwizard"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBo-ZqZ-nZy5BN8at2Xk7F5YmqPxUS83hg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

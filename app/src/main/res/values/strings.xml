@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">WalletWizard</string>
+    <string name="title_activity_edit_categories">EditCategories</string>
+</resources>
