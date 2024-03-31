@@ -1,7 +1,6 @@
 package com.example.walletwizard
 
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -63,6 +62,7 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -107,13 +107,18 @@ import com.example.walletwizard.Database.SqLiteDB
 import com.example.walletwizard.Model.CategoriesData
 import com.example.walletwizard.Model.PieData
 import com.example.walletwizard.Model.TransactionsData
-import com.example.walletwizard.ui.theme.DarkSapphire
+import com.example.walletwizard.ui.theme.DarkModeDarkSapphire
+import com.example.walletwizard.ui.theme.DarkModeLightSapphire
+import com.example.walletwizard.ui.theme.DarkModeLightestSapphire
+import com.example.walletwizard.ui.theme.LightModeDarkSapphire
 import com.example.walletwizard.ui.theme.ExtraDarkTransparent
 import com.example.walletwizard.ui.theme.FontName
 import com.example.walletwizard.ui.theme.Green
-import com.example.walletwizard.ui.theme.LightAliceBlue
-import com.example.walletwizard.ui.theme.LightestSapphire
+import com.example.walletwizard.ui.theme.LightModeLightAliceBlue
+import com.example.walletwizard.ui.theme.LightModeLightestSapphire
 import com.example.walletwizard.ui.theme.WalletWizardTheme
+import com.example.walletwizard.ui.theme.getColorPalette
+import com.example.walletwizard.ui.theme.observeDarkModeState
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -127,10 +132,9 @@ class HomeScreen : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             WalletWizardTheme {
-                // A surface container using the 'background' color from the theme
+
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = Color.White
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     val navController = rememberNavController()
 
@@ -161,6 +165,8 @@ class HomeScreen : ComponentActivity() {
 @Composable
 fun NavigationDrawer(navController: NavController){
     var scope = rememberCoroutineScope()
+    val colorPalette = getColorPalette(context = LocalContext.current)
+
     val drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     var navigationItems = listOf("Daily","Weekly","Monthly","Yearly")
     var navigationItemIndex by rememberSaveable{
@@ -170,16 +176,22 @@ fun NavigationDrawer(navController: NavController){
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet(modifier = Modifier
+            ModalDrawerSheet(
+                drawerContainerColor = colorPalette.surfaceColor,
+                modifier = Modifier
                 .padding(end = 80.dp)) {
                 Spacer(modifier = Modifier.padding(25.dp))
                 navigationItems.forEachIndexed { index, item ->
                     NavigationDrawerItem(
-                        colors = NavigationDrawerItemDefaults.colors(LightestSapphire),
+                        colors = NavigationDrawerItemDefaults.colors(
+                            colorPalette.lightestSapphire,
+                            unselectedContainerColor = Color.Transparent,
+                            selectedTextColor = colorPalette.darkSapphire,
+                            unselectedTextColor = colorPalette.unselectedColor
+                        ),
                         label = {
                             Text(
                                 text = item,
-                                color = DarkSapphire,
                                 fontFamily = FontName,
                                 fontWeight = FontWeight.Normal
                             )
@@ -192,13 +204,21 @@ fun NavigationDrawer(navController: NavController){
                         modifier = Modifier
                             .padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
+                    Spacer(modifier = Modifier.padding(5.dp))
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 NavigationDrawerItem(
+                    colors = NavigationDrawerItemDefaults.colors(
+                        colorPalette.lightestSapphire,
+                        unselectedContainerColor = Color.Transparent,
+                        selectedTextColor = colorPalette.darkSapphire,
+                        unselectedTextColor = colorPalette.unselectedColor,
+                        unselectedIconColor = colorPalette.unselectedColor,
+                        selectedIconColor = colorPalette.darkSapphire
+                    ),
                     label = {
                         Text(
                             text = "Settings",
-                            color = DarkSapphire,
                             fontFamily = FontName,
                             fontWeight = FontWeight.Normal
                         )
@@ -209,7 +229,7 @@ fun NavigationDrawer(navController: NavController){
                         scope.launch { drawerState.close() }
                     },
                     icon = {
-                           Icon(imageVector = Icons.Default.Settings, contentDescription = null, tint = DarkSapphire)
+                           Icon(imageVector = Icons.Default.Settings, contentDescription = null)
                     },
                     modifier = Modifier
                         .padding(NavigationDrawerItemDefaults.ItemPadding)
@@ -231,10 +251,12 @@ fun ScaffoldImplementation(
     selectedItemIndex: Int,
     onClick: (String) -> Unit
 ){
+    var scope = rememberCoroutineScope()
+    val colorPalette = getColorPalette(context = LocalContext.current)
+
     var transactionsData = remember {
         mutableStateOf(TransactionsData())
     }
-    val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { 2 })
     val isSearchBarClicked = remember{
         mutableStateOf(false)
@@ -244,14 +266,20 @@ fun ScaffoldImplementation(
     }
 
     Scaffold (
+        containerColor = colorPalette.surfaceColor,
         topBar = {
             CenterAlignedTopAppBar(
-                modifier = Modifier
-                    .padding(start = 10.dp, end = 10.dp),
+                colors = TopAppBarColors(
+                    containerColor = colorPalette.surfaceColor,
+                    navigationIconContentColor =  colorPalette.darkSapphire,
+                    scrolledContainerColor = Color.Transparent,
+                    titleContentColor = colorPalette.unselectedColor,
+                    actionIconContentColor =  colorPalette.darkSapphire
+                    ),
+                modifier = Modifier,
                 title = {
                     Text(
                         text = "WalletWizard",
-                        color = DarkSapphire,
                         fontSize = 20.sp,
                         fontFamily = FontName,
                         fontWeight = FontWeight.Normal
@@ -260,9 +288,13 @@ fun ScaffoldImplementation(
                 navigationIcon = {
                     Box(
                         modifier = Modifier
+                            .padding(start = 6.dp)
                             .size(43.dp)
                             .wrapContentSize()
-                            .background(color = LightAliceBlue, RoundedCornerShape(100.dp))
+                            .background(
+                                color = colorPalette.lightAliceSapphire,
+                                RoundedCornerShape(100.dp)
+                            )
 
                     ) {
                         IconButton(
@@ -278,7 +310,6 @@ fun ScaffoldImplementation(
                                     .size(22.dp),
                                 imageVector = Icons.Default.Menu,
                                 contentDescription = null,
-                                tint = DarkSapphire
                             )
                         }
                     }
@@ -286,9 +317,13 @@ fun ScaffoldImplementation(
                 actions = {
                     Box(
                         modifier = Modifier
+                            .padding(end = 6.dp)
                             .size(43.dp)
                             .wrapContentSize()
-                            .background(color = LightAliceBlue, RoundedCornerShape(100.dp))
+                            .background(
+                                color = colorPalette.lightAliceSapphire,
+                                RoundedCornerShape(100.dp)
+                            )
 
                     ) {
                         IconButton(
@@ -303,7 +338,6 @@ fun ScaffoldImplementation(
                                     .size(22.dp),
                                 imageVector = Icons.Default.Search,
                                 contentDescription = null,
-                                tint = DarkSapphire
                             )
                         }
                     }
@@ -321,7 +355,7 @@ fun ScaffoldImplementation(
                         isTransactionClicked.value = true
                     }
                 },
-                containerColor = DarkSapphire
+                containerColor = colorPalette.darkSapphire
             ) {
                 Icon(imageVector = if(pagerState.currentPage == 0) Icons.Default.Edit else Icons.Default.Add, contentDescription = null, tint = Color.White)
             }
@@ -331,6 +365,7 @@ fun ScaffoldImplementation(
 
         ) {
             TabRow(
+                containerColor = colorPalette.surfaceColor,
                 modifier = Modifier
                     .padding(top = 12.dp),
                 selectedTabIndex = pagerState.currentPage,
@@ -338,7 +373,7 @@ fun ScaffoldImplementation(
                 indicator = {tabPositions ->
                     TabRowDefaults.Indicator(
                         Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
-                        color = DarkSapphire
+                        color = colorPalette.unselectedColor
                     )
                 }
             ) {
@@ -349,7 +384,7 @@ fun ScaffoldImplementation(
                              text = "Categories", fontFamily = FontName,
                              fontWeight = FontWeight.Normal,
                              fontSize = 16.sp,
-                             color = DarkSapphire)
+                             color = colorPalette.unselectedColor)
                     },
                     onClick = {
                         scope.launch {
@@ -365,7 +400,7 @@ fun ScaffoldImplementation(
                             fontFamily = FontName,
                             fontWeight = FontWeight.Normal,
                             fontSize = 16.sp,
-                            color = DarkSapphire
+                            color = colorPalette.unselectedColor
                         )
                     },
                     onClick = {
@@ -408,6 +443,8 @@ fun ScaffoldImplementation(
 
 @Composable
 fun Content(page:Int,index:Int,onTransactionItemClicked: (TransactionsData) -> Unit){
+    val colorPalette = getColorPalette(context = LocalContext.current)
+
     val monthList = listOf("January","February","March","April","May","June","July","August","September","October","November","December")
     val daysList = listOf("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday")
 
@@ -424,7 +461,7 @@ fun Content(page:Int,index:Int,onTransactionItemClicked: (TransactionsData) -> U
         currIndex.intValue = index
     }
 
-    Column(Modifier.background(LightAliceBlue)) {
+    Column(Modifier.background(colorPalette.lightAliceSapphire)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -457,7 +494,7 @@ fun Content(page:Int,index:Int,onTransactionItemClicked: (TransactionsData) -> U
                 Icon(
                     imageVector = Icons.Default.KeyboardArrowLeft,
                     contentDescription = null,
-                    tint = DarkSapphire
+                    tint = colorPalette.darkSapphire
                 )
             }
             Text(
@@ -491,7 +528,7 @@ fun Content(page:Int,index:Int,onTransactionItemClicked: (TransactionsData) -> U
                 fontFamily = FontName,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
-                color = DarkSapphire
+                color = colorPalette.darkSapphire
             )
             IconButton(
                 onClick = {
@@ -518,7 +555,7 @@ fun Content(page:Int,index:Int,onTransactionItemClicked: (TransactionsData) -> U
                 Icon(
                     imageVector = Icons.Default.KeyboardArrowRight,
                     contentDescription = null,
-                    tint = DarkSapphire
+                    tint = colorPalette.darkSapphire
                 )
             }
         }
@@ -816,6 +853,8 @@ fun Transactions(index:Int,calendar: Calendar,onTransactionItemClicked: (Transac
 
 @Composable
 fun LazyColumnHeader(strDate:String){
+    val colorPalette = getColorPalette(context = LocalContext.current)
+
     val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
     val date = LocalDate.parse(strDate,dateFormat)
 
@@ -835,7 +874,7 @@ fun LazyColumnHeader(strDate:String){
             fontFamily = FontName,
             fontWeight = FontWeight.Normal,
             fontSize = 17.sp,
-            color = DarkSapphire
+            color = colorPalette.darkSapphire
         )
         Column(
             modifier = Modifier
@@ -847,13 +886,13 @@ fun LazyColumnHeader(strDate:String){
                 fontFamily = FontName,
                 fontWeight = FontWeight.Normal,
                 fontSize = 14.sp,
-                color = DarkSapphire)
+                color = colorPalette.darkSapphire)
             Text(
                 text = "$month $year",
                 fontFamily = FontName,
                 fontWeight = FontWeight.Normal,
                 fontSize = 14.sp,
-                color = DarkSapphire)
+                color = colorPalette.darkSapphire)
         }
     }
 }
@@ -867,6 +906,8 @@ fun ListCategoryItems(
     totalAmount:Long,
     isExpense:Boolean
 ){
+    val colorPalette = getColorPalette(context = LocalContext.current)
+
     Card(shape = CircleShape,
         colors = CardColors(
             containerColor = Color.Transparent,
@@ -918,7 +959,7 @@ fun ListCategoryItems(
                         fontFamily = FontName,
                         fontWeight = FontWeight.Normal,
                         fontSize = 16.sp,
-                        color = DarkSapphire
+                        color = colorPalette.darkSapphire
                     )
 
                     Text(
@@ -941,14 +982,14 @@ fun ListCategoryItems(
                             .height(7.dp)
                             .clip(RoundedCornerShape(50.dp)),
                         color = color,
-                        trackColor = LightestSapphire,
+                        trackColor = colorPalette.lightestSapphire,
                     )
 
                     Text(
                         modifier = Modifier
                             .width(42.dp),
                         text = "${((amount.toFloat() / totalAmount.toFloat()) * 100).toInt()} %",
-                        color = DarkSapphire,
+                        color = colorPalette.darkSapphire,
                         fontSize = 12.sp,
                         fontFamily = FontName,
                         fontWeight = FontWeight.Normal,
@@ -971,6 +1012,8 @@ fun ListTransactionItems(
     time:String,
     onClick: () -> Unit
 ){
+    val colorPalette = getColorPalette(context = LocalContext.current)
+
     Card(
         shape = CircleShape,
         modifier = Modifier
@@ -1027,7 +1070,7 @@ fun ListTransactionItems(
                         fontFamily = FontName,
                         fontWeight = FontWeight.Normal,
                         fontSize = 15.sp,
-                        color = DarkSapphire
+                        color = colorPalette.darkSapphire
                     )
 
                     Column(
@@ -1042,7 +1085,7 @@ fun ListTransactionItems(
                         )
                         Text(
                             text = "$time",
-                            color = DarkSapphire,
+                            color = colorPalette.darkSapphire,
                             fontSize = 12.sp,
                             fontFamily = FontName,
                             fontWeight = FontWeight.Normal
@@ -1062,6 +1105,9 @@ fun CreateTransaction(
     onClick: () -> Unit,
     transactionsData: TransactionsData
 ){
+    val colorPalette = getColorPalette(context = LocalContext.current)
+
+
     val context = LocalContext.current
     var name = transactionsData.name
     val text =
@@ -1134,7 +1180,7 @@ fun CreateTransaction(
                         modifier = Modifier
                             .size(40.dp)
                             .background(
-                                color = if (selectedItemIndex.intValue == 0) DarkSapphire else Color.Transparent,
+                                color = if (selectedItemIndex.intValue == 0) colorPalette.darkSapphire else Color.Transparent,
                                 RoundedCornerShape(50.dp)
                             )
                             .clip(CircleShape),
@@ -1145,13 +1191,13 @@ fun CreateTransaction(
                     ) {
                         Text(
                             text = "Expense",
-                            color = if (selectedItemIndex.intValue == 0) Color.White else DarkSapphire
+                            color = if (selectedItemIndex.intValue == 0) Color.White else colorPalette.darkSapphire
                         )
                     }
                     Tab(
                         modifier = Modifier
                             .background(
-                                color = if (selectedItemIndex.intValue == 1) DarkSapphire else Color.Transparent,
+                                color = if (selectedItemIndex.intValue == 1) colorPalette.darkSapphire else Color.Transparent,
                                 RoundedCornerShape(50.dp)
                             )
                             .clip(CircleShape),
@@ -1164,7 +1210,7 @@ fun CreateTransaction(
                     ) {
                         Text(
                             text = "Income",
-                            color = if (selectedItemIndex.intValue == 1) Color.White else DarkSapphire
+                            color = if (selectedItemIndex.intValue == 1) Color.White else colorPalette.darkSapphire
                         )
                     }
                 }
@@ -1193,12 +1239,12 @@ fun CreateTransaction(
                         fontWeight = FontWeight.Normal
                     ),
                     colors = TextFieldDefaults.colors(
-                        unfocusedTextColor = DarkSapphire,
-                        focusedTextColor = DarkSapphire,
+                        unfocusedTextColor = colorPalette.darkSapphire,
+                        focusedTextColor = colorPalette.darkSapphire,
                         unfocusedContainerColor = Color.Transparent,
                         focusedContainerColor = Color.Transparent,
-                        focusedIndicatorColor = LightAliceBlue,
-                        unfocusedIndicatorColor = LightAliceBlue
+                        focusedIndicatorColor = colorPalette.lightAliceSapphire,
+                        unfocusedIndicatorColor = colorPalette.lightAliceSapphire
                     ),
                     placeholder = {
                         Text(
@@ -1278,7 +1324,7 @@ fun CreateTransaction(
                                     .background(
                                         color = if (categoryIndex.intValue == index) Color(
                                             categoriesData.color
-                                        ) else LightAliceBlue,
+                                        ) else LightModeLightAliceBlue,
                                     )
                             ) {
                                 ListItem(
@@ -1286,7 +1332,7 @@ fun CreateTransaction(
                                     padding = 5.dp,
                                     size = 22,
                                     text = categoriesData.text,
-                                    textColor = if (categoryIndex.intValue == index) Color.White else DarkSapphire,
+                                    textColor = if (categoryIndex.intValue == index) Color.White else LightModeDarkSapphire,
                                     fontSize = 13.sp,
                                     imageVector = ImageVector.vectorResource(categoriesData.imageVector),
                                     color = Color(categoriesData.color),

@@ -31,13 +31,17 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,15 +55,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.walletwizard.Database.SqLiteDB
 import com.example.walletwizard.Model.colorList
 import com.example.walletwizard.Model.iconList
 import com.example.walletwizard.ui.theme.Cerise
-import com.example.walletwizard.ui.theme.DarkSapphire
+import com.example.walletwizard.ui.theme.DarkModeDarkSapphire
+import com.example.walletwizard.ui.theme.DarkModeLightSapphire
+import com.example.walletwizard.ui.theme.LightModeDarkSapphire
 import com.example.walletwizard.ui.theme.FontName
 import com.example.walletwizard.ui.theme.Green
-import com.example.walletwizard.ui.theme.LightAliceBlue
+import com.example.walletwizard.ui.theme.LightModeLightAliceBlue
+import com.example.walletwizard.ui.theme.getColorPalette
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -82,16 +88,22 @@ fun NewCategory(
         skipPartiallyExpanded = true,
     )
 
+    val colorPalette = getColorPalette(context = LocalContext.current)
+
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                modifier = Modifier
-                    .padding(horizontal = 10.dp),
+                colors = TopAppBarColors(
+                    containerColor = colorPalette.surfaceColor,
+                    navigationIconContentColor =  colorPalette.darkSapphire,
+                    scrolledContainerColor = Color.Transparent,
+                    titleContentColor = colorPalette.unselectedColor,
+                    actionIconContentColor =  colorPalette.darkSapphire
+                ),
                 title = {
                     Text(
                         text = toolbarTitle,
-                        color = DarkSapphire,
                         fontSize = 20.sp,
                         fontFamily = FontName,
                         fontWeight = FontWeight.Normal
@@ -100,9 +112,10 @@ fun NewCategory(
                 navigationIcon = {
                     Box(
                         modifier = Modifier
+                            .padding(start = 6.dp)
                             .size(43.dp)
                             .wrapContentSize()
-                            .background(color = LightAliceBlue, RoundedCornerShape(100.dp))
+                            .background(color = colorPalette.lightAliceSapphire, RoundedCornerShape(100.dp))
 
                     ) {
                         IconButton(
@@ -116,7 +129,6 @@ fun NewCategory(
                                     .size(22.dp),
                                 imageVector = Icons.Default.Close,
                                 contentDescription = null,
-                                tint = DarkSapphire
                             )
                         }
                     }
@@ -124,9 +136,10 @@ fun NewCategory(
                 actions = {
                     Box(
                         modifier = Modifier
+                            .padding(end = 6.dp)
                             .size(43.dp)
                             .wrapContentSize()
-                            .background(color = LightAliceBlue, RoundedCornerShape(100.dp))
+                            .background(color = colorPalette.lightAliceSapphire, RoundedCornerShape(100.dp))
 
                     ) {
                         IconButton(
@@ -159,7 +172,6 @@ fun NewCategory(
                                     .size(22.dp),
                                 imageVector = Icons.Default.Check,
                                 contentDescription = null,
-                                tint = DarkSapphire
                             )
                         }
                     }
@@ -170,6 +182,7 @@ fun NewCategory(
         Column(
             Modifier
                 .padding(paddingValues)
+                .background(color = colorPalette.lightestSapphire)
                 .fillMaxSize()) {
             Row(modifier = Modifier
                 .padding(horizontal = 10.dp, vertical = 20.dp)
@@ -229,7 +242,7 @@ fun NewCategory(
                 Box(modifier = Modifier
                     .fillMaxWidth()
                     .padding(end = 10.dp)
-                    .border(color = DarkSapphire, width = 2.dp, shape = RoundedCornerShape(10.dp))
+                    .border(color = colorPalette.darkSapphire, width = 2.dp, shape = RoundedCornerShape(10.dp))
                     .weight(0.9f)) {
 
 
@@ -245,14 +258,14 @@ fun NewCategory(
                         placeholder = {
                             Text(
                                 text = "Enter the name",
-                                color= DarkSapphire,
+                                color= colorPalette.darkSapphire,
                                 fontFamily = FontName,
                                 fontWeight = FontWeight.Normal,
                                 fontSize = 16.sp,
                             )
                         },
                         colors = TextFieldDefaults.colors(
-                            focusedTextColor = DarkSapphire,
+                            focusedTextColor = colorPalette.darkSapphire,
                             focusedContainerColor = Color.Transparent,
                             unfocusedContainerColor = Color.Transparent,
                             disabledContainerColor = Color.Transparent,
@@ -313,6 +326,9 @@ fun BottomSheetDialogItems(
     onClickClosed: () -> Unit,
     onClickSaved: (Int,Long) -> Unit
 ){
+    val colorPalette = getColorPalette(context = LocalContext.current)
+
+
     var isSelectedColorList = remember { mutableStateListOf<Boolean>() }
     var isSelectedIconList = remember { mutableStateListOf<Boolean>() }
     var selectedColor = remember { mutableLongStateOf(Cerise) }
@@ -370,7 +386,7 @@ fun BottomSheetDialogItems(
                 Text(
                     text = "Category Icon",
                     fontSize = 18.sp,
-                    color = DarkSapphire,
+                    color = colorPalette.darkSapphire,
                     fontFamily = FontName,
                     fontWeight = FontWeight.Normal,
                     textAlign = TextAlign.Center
@@ -445,7 +461,7 @@ fun BottomSheetDialogItems(
                 modifier = Modifier
                     .padding(10.dp),
                 text = "Cancel",
-                color = DarkSapphire,
+                color = colorPalette.darkSapphire,
                 fontFamily = FontName,
                 fontWeight = FontWeight.Normal,
                 textAlign = TextAlign.Center
@@ -465,7 +481,7 @@ fun BottomSheetDialogItems(
                 modifier = Modifier
                     .padding(10.dp),
                 text = "Save",
-                color = DarkSapphire,
+                color = colorPalette.darkSapphire,
                 fontFamily = FontName,
                 fontWeight = FontWeight.Normal,
                 textAlign = TextAlign.Center

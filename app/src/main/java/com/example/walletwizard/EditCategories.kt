@@ -1,6 +1,5 @@
 package com.example.walletwizard
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -28,14 +27,17 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
-import androidx.compose.material3.TabRowDefaults.containerColor
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -50,24 +52,33 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.walletwizard.Database.SqLiteDB
 import com.example.walletwizard.Model.CategoriesData
-import com.example.walletwizard.ui.theme.Cerise
-import com.example.walletwizard.ui.theme.DarkSapphire
+import com.example.walletwizard.ui.theme.DarkModeDarkSapphire
+import com.example.walletwizard.ui.theme.DarkModeLightSapphire
+import com.example.walletwizard.ui.theme.LightModeDarkSapphire
 import com.example.walletwizard.ui.theme.FontName
-import com.example.walletwizard.ui.theme.LightAliceBlue
+import com.example.walletwizard.ui.theme.LightModeLightAliceBlue
+import com.example.walletwizard.ui.theme.getColorPalette
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun EditCategories(navController: NavController){
+    val colorPalette = getColorPalette(context = LocalContext.current)
+
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                modifier = Modifier
-                    .padding(start = 10.dp, end = 10.dp),
+                colors = TopAppBarColors(
+                    containerColor = colorPalette.surfaceColor,
+                    navigationIconContentColor = colorPalette.darkSapphire,
+                    scrolledContainerColor = Color.Transparent,
+                    titleContentColor = colorPalette.unselectedColor,
+                    actionIconContentColor = colorPalette.darkSapphire
+                ),
                 title = {
                     Text(
                         text = "EditCategories",
-                        color = DarkSapphire,
                         fontSize = 20.sp,
                         fontFamily = FontName,
                         fontWeight = FontWeight.Normal
@@ -76,9 +87,10 @@ fun EditCategories(navController: NavController){
                 actions = {
                     Box(
                         modifier = Modifier
+                            .padding(end = 6.dp)
                             .size(43.dp)
                             .wrapContentSize()
-                            .background(color = LightAliceBlue, RoundedCornerShape(100.dp))
+                            .background(color = colorPalette.lightAliceSapphire, RoundedCornerShape(100.dp))
 
                     ) {
                         IconButton(
@@ -90,18 +102,17 @@ fun EditCategories(navController: NavController){
                                 modifier = Modifier
                                     .size(22.dp),
                                 imageVector = Icons.Default.Add,
-                                contentDescription = null,
-                                tint = DarkSapphire
-                            )
+                                contentDescription = null)
                         }
                     }
                 },
                 navigationIcon = {
                     Box(
                         modifier = Modifier
+                            .padding(start = 6.dp)
                             .size(43.dp)
                             .wrapContentSize()
-                            .background(color = LightAliceBlue, RoundedCornerShape(100.dp))
+                            .background(color = colorPalette.lightAliceSapphire, RoundedCornerShape(100.dp))
 
                     ) {
                         IconButton(
@@ -114,16 +125,14 @@ fun EditCategories(navController: NavController){
                                 modifier = Modifier
                                     .size(22.dp),
                                 imageVector = Icons.Default.ArrowBack,
-                                contentDescription = null,
-                                tint = DarkSapphire
-                            )
+                                contentDescription = null)
                         }
                     }
                 }
             )
         }
     ){paddingValues ->
-        Column(Modifier.padding(paddingValues)) {
+        Column(Modifier.padding(paddingValues).background(color = colorPalette.lightestSapphire)) {
             val pagerState = rememberPagerState(pageCount = {2})
             val showDialogBox = remember {
                 mutableIntStateOf(0)
@@ -133,12 +142,12 @@ fun EditCategories(navController: NavController){
             val scope = rememberCoroutineScope()
 
             TabRow(
+                containerColor = colorPalette.lightAliceSapphire,
                 modifier = Modifier
                     .padding(top = 20.dp, start = 8.dp, end = 8.dp)
                     .clip(CircleShape),
                 divider = {},
                 selectedTabIndex = pagerState.currentPage,
-                containerColor = LightAliceBlue,
                 indicator = {tabPositions ->
                     TabRowDefaults.Indicator(
                         Modifier
@@ -148,14 +157,14 @@ fun EditCategories(navController: NavController){
                             .clip(
                                 CircleShape
                             ),
-                        color = DarkSapphire
+                        color = colorPalette.darkSapphire
                     )
                 }
             ) {
                 Tab(
                     modifier = Modifier
                         .background(
-                            color = if (pagerState.currentPage == 0) DarkSapphire else Color.Transparent,
+                            color = if (pagerState.currentPage == 0) colorPalette.darkSapphire else Color.Transparent,
                             RoundedCornerShape(50.dp)
                         )
                         .clip(CircleShape),
@@ -166,7 +175,7 @@ fun EditCategories(navController: NavController){
                             fontFamily = FontName,
                             fontWeight = FontWeight.Normal,
                             fontSize = 16.sp,
-                            color = if(pagerState.currentPage == 0) Color.White else DarkSapphire
+                            color = if(pagerState.currentPage == 0) Color.White else colorPalette.darkSapphire
                         )
                     },
                     onClick = {
@@ -179,7 +188,7 @@ fun EditCategories(navController: NavController){
                 Tab(
                     modifier = Modifier
                         .background(
-                            color = if (pagerState.currentPage == 1) DarkSapphire else Color.Transparent,
+                            color = if (pagerState.currentPage == 1) colorPalette.darkSapphire else Color.Transparent,
                             RoundedCornerShape(50.dp)
                         )
                         .clip(CircleShape),
@@ -190,7 +199,7 @@ fun EditCategories(navController: NavController){
                             fontFamily = FontName,
                             fontWeight = FontWeight.Normal,
                             fontSize = 16.sp,
-                            color = if(pagerState.currentPage == 1) Color.White else DarkSapphire)
+                            color = if(pagerState.currentPage == 1) Color.White else colorPalette.darkSapphire)
                     },
                     onClick = {
                         scope.launch {
@@ -239,6 +248,9 @@ fun EditCategories(navController: NavController){
 
 @Composable
 fun Expense(onClick: (Int) -> Unit,onLongClick: (Int) -> Unit){
+    val colorPalette = getColorPalette(context = LocalContext.current)
+
+
     val list = expensesListData()
     LazyColumn(modifier = Modifier
         .padding(10.dp)
@@ -252,6 +264,7 @@ fun Expense(onClick: (Int) -> Unit,onLongClick: (Int) -> Unit){
                 text = categoriesData.text,
                 imageVector = ImageVector.vectorResource(categoriesData.imageVector),
                 color = Color(categoriesData.color),
+                textColor = colorPalette.darkSapphire,
                 onClick = {
                     onClick(categoriesData.id)
                 },
@@ -265,6 +278,8 @@ fun Expense(onClick: (Int) -> Unit,onLongClick: (Int) -> Unit){
 
 @Composable
 fun Income(onClick: (Int) -> Unit,onLongClick: (Int) -> Unit){
+    val colorPalette = getColorPalette(context = LocalContext.current)
+
     val list = incomeListData()
     LazyColumn(modifier = Modifier
         .padding(10.dp)
@@ -277,6 +292,7 @@ fun Income(onClick: (Int) -> Unit,onLongClick: (Int) -> Unit){
                 padding = 10.dp,
                 text = categoriesData.text,
                 imageVector = ImageVector.vectorResource(categoriesData.imageVector),
+                textColor = colorPalette.darkSapphire,
                 color = Color(categoriesData.color),
                 onClick = {
                     onClick(categoriesData.id)

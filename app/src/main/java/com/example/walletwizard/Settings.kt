@@ -24,7 +24,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
@@ -38,13 +40,17 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,26 +70,42 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.walletwizard.ui.theme.DarkSapphire
+import com.example.walletwizard.ui.theme.DarkModeDarkSapphire
+import com.example.walletwizard.ui.theme.DarkModeLightSapphire
+import com.example.walletwizard.ui.theme.DarkModeLightestSapphire
+import com.example.walletwizard.ui.theme.LightModeDarkSapphire
 import com.example.walletwizard.ui.theme.FontName
-import com.example.walletwizard.ui.theme.LightAliceBlue
-import com.example.walletwizard.ui.theme.LightSapphire
+import com.example.walletwizard.ui.theme.LightModeLightSapphire
+import com.example.walletwizard.ui.theme.LightModeLightestSapphire
+import com.example.walletwizard.ui.theme.getColorPalette
 import com.google.firebase.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.storage
+import kotlinx.coroutines.launch
 import java.io.File
-import java.sql.SQLException
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Settings(navController: NavController){
+    val colorPalette = getColorPalette(context = LocalContext.current)
+    val darkMode:DarkMode = DarkMode.getInstance(LocalContext.current)
+
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
+                colors = TopAppBarColors(
+                    containerColor = colorPalette.surfaceColor,
+                    navigationIconContentColor =  colorPalette.darkSapphire,
+                    scrolledContainerColor = Color.Transparent,
+                    titleContentColor = colorPalette.unselectedColor,
+                    actionIconContentColor =  colorPalette.surfaceColor
+                ),
                 title = {
                     Text(
                         text = "Settings",
-                        color = DarkSapphire,
+                        color = colorPalette.unselectedColor,
                         fontSize = 20.sp,
                         fontFamily = FontName,
                         fontWeight = FontWeight.Normal
@@ -95,7 +117,10 @@ fun Settings(navController: NavController){
                             .padding(start = 8.dp)
                             .size(43.dp)
                             .wrapContentSize()
-                            .background(color = LightAliceBlue, RoundedCornerShape(100.dp))
+                            .background(
+                                color = colorPalette.lightestSapphire,
+                                RoundedCornerShape(100.dp)
+                            )
 
                     ) {
                         IconButton(
@@ -109,7 +134,6 @@ fun Settings(navController: NavController){
                                     .size(22.dp),
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = null,
-                                tint = DarkSapphire
                             )
                         }
                     }
@@ -123,9 +147,25 @@ fun Settings(navController: NavController){
         val sheetState = rememberModalBottomSheetState(
             skipPartiallyExpanded = true,
         )
+        val scope = rememberCoroutineScope()
         val context = LocalContext.current
 
-        Surface(color = LightSapphire) {
+        fun setDarkMode(){
+            scope.launch{
+                isChecked.value = darkMode.isDarkModeEnabled()
+            }
+        }
+        setDarkMode()
+
+        fun toggleDarkMode(enabled: Boolean) {
+            scope.launch {
+                darkMode.saveDarkModeEnabled(enabled)
+            }
+        }
+
+
+
+        Surface(color = colorPalette.lightSapphire) {
             Column(
                 modifier = Modifier
                     .padding(paddingValues)
@@ -134,6 +174,12 @@ fun Settings(navController: NavController){
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Card(
+                    colors = CardColors(
+                        containerColor = colorPalette.surfaceColor,
+                        contentColor = colorPalette.unselectedColor,
+                        disabledContentColor = colorPalette.unselectedColor,
+                        disabledContainerColor = Color.Transparent
+                    ),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(15.dp),
@@ -147,8 +193,7 @@ fun Settings(navController: NavController){
                             text = "Data",
                             fontSize = 16.sp,
                             fontFamily = FontName,
-                            fontWeight = FontWeight.Normal,
-                            color = DarkSapphire
+                            fontWeight = FontWeight.Normal
                         )
 
                         Column(
@@ -175,9 +220,7 @@ fun Settings(navController: NavController){
                             text = "General",
                             fontSize = 16.sp,
                             fontFamily = FontName,
-                            fontWeight = FontWeight.Normal,
-                            color = DarkSapphire
-                        )
+                            fontWeight = FontWeight.Normal)
 
                         Column(
                             modifier = Modifier
@@ -201,6 +244,7 @@ fun Settings(navController: NavController){
                                         checked = isChecked.value,
                                         onCheckedChange = {
                                             isChecked.value = it
+                                            toggleDarkMode(it)
                                         }
                                     )
                                 }
@@ -214,13 +258,14 @@ fun Settings(navController: NavController){
                                 Box(modifier = Modifier.padding(20.dp)){
                                     Text(
                                         text = if(select.intValue == 0) "Create data backup" else if(select.intValue == 1) "Restore data" else "Delete data",
-                                        color = DarkSapphire,
+                                        color = colorPalette.darkSapphire,
                                         fontSize = 20.sp,
                                         fontFamily = FontName,
                                         fontWeight = FontWeight.Normal
                                     )
                                 }
                             },
+                            containerColor = Color.White,
                             sheetState = sheetState,
                             onDismissRequest = { showBottomSheet.value = false }
                         ) {
@@ -277,6 +322,8 @@ fun SingleCharacterTextField(
     text:String,
     onValueChange: (String) -> Unit
 ){
+    val colorPalette = getColorPalette(context = LocalContext.current)
+
     OutlinedTextField(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(10.dp),
@@ -287,16 +334,18 @@ fun SingleCharacterTextField(
         textStyle = LocalTextStyle.current.copy(
             textAlign = TextAlign.Center,
             fontSize = 20.sp,
-            color = DarkSapphire
+            color = colorPalette.darkSapphire
         ),
         singleLine = true
     )
 }
 @Composable
 fun PhoneNumberTextField(text:String,onValueChange: (String) -> Unit){
+    val colorPalette = getColorPalette(context = LocalContext.current)
+
     Text(
         text = "Phone Number",
-        color = DarkSapphire,
+        color = colorPalette.darkSapphire,
         fontSize = 18.sp,
         fontFamily = FontName,
         fontWeight = FontWeight.Normal
@@ -308,7 +357,7 @@ fun PhoneNumberTextField(text:String,onValueChange: (String) -> Unit){
         value = text,
         onValueChange = onValueChange,
         textStyle = LocalTextStyle.current.copy(
-            color = DarkSapphire
+            color = colorPalette.darkSapphire
         ),
         label = {Text(text = "phone no.")},
         keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
@@ -318,9 +367,11 @@ fun PhoneNumberTextField(text:String,onValueChange: (String) -> Unit){
 }
 @Composable
 fun OtpTextField(textList:List<MutableState<String>>,onValueChange: (Int,String) -> Unit){
+    val colorPalette = getColorPalette(context = LocalContext.current)
+
     Text(
         text = "OTP",
-        color = DarkSapphire,
+        color = colorPalette.darkSapphire,
         fontSize = 18.sp,
         fontFamily = FontName,
         fontWeight = FontWeight.Normal
@@ -375,6 +426,7 @@ fun ActionButton(
     sendingOtp: MutableState<Boolean>,
     onClick: () -> Unit){
 
+    val colorPalette = getColorPalette(context = LocalContext.current)
     var state = remember { mutableStateOf(false) }
     var verificationId = remember { mutableStateOf("") }
     val isAnyTextFieldEmpty = otpTextList.any { it.value.isBlank() }
@@ -384,6 +436,12 @@ fun ActionButton(
     val storageReference = Firebase.storage.reference.child("databases/${phoneNumberState.value}.db")
 
     Button(
+        colors = ButtonColors(
+            containerColor = colorPalette.darkSapphire,
+            contentColor = Color.White,
+            disabledContainerColor = colorPalette.darkSapphire,
+            disabledContentColor = Color.White
+        ),
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 8.dp),
@@ -583,9 +641,10 @@ fun DeleteData(
         }
 }
 
-
 @Composable
 fun Item(img:Int,text:String,onClick: () -> Unit){
+    val colorPalette = getColorPalette(context = LocalContext.current)
+
     Surface(modifier = Modifier
         .fillMaxWidth()
         .clip(CircleShape)
@@ -601,7 +660,7 @@ fun Item(img:Int,text:String,onClick: () -> Unit){
             Icon(
                 imageVector = ImageVector.vectorResource(img),
                 contentDescription = null,
-                tint = DarkSapphire
+                tint = colorPalette.unselectedColor
             )
             Spacer(modifier = Modifier.padding(5.dp))
             Text(
@@ -609,7 +668,7 @@ fun Item(img:Int,text:String,onClick: () -> Unit){
                 fontSize = 17.sp,
                 fontFamily = FontName,
                 fontWeight = FontWeight.Normal,
-                color = DarkSapphire
+                color = colorPalette.unselectedColor
             )
         }
     }

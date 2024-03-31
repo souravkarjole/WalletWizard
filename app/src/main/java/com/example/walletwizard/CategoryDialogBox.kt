@@ -8,10 +8,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -19,10 +17,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -38,7 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.example.walletwizard.ui.theme.DarkSapphire
+import com.example.walletwizard.ui.theme.LightModeDarkSapphire
 import com.example.walletwizard.ui.theme.FontName
 
 
@@ -67,7 +63,7 @@ fun DialogBox(
                 Text(
                     modifier = Modifier.padding(top = 10.dp, bottom = 10.dp),
                     text = "Delete",
-                    color = DarkSapphire,
+                    color = LightModeDarkSapphire,
                     fontSize = 20.sp,
                     fontFamily = FontName,
                     fontWeight = FontWeight.Normal
@@ -98,7 +94,7 @@ fun DialogBox(
                                 onConfirmationRequest()
                             },
                         text = "Confirm",
-                        color = DarkSapphire,
+                        color = LightModeDarkSapphire,
                         fontSize = 17.sp,
                         fontFamily = FontName,
                         fontWeight = FontWeight.Normal
@@ -115,7 +111,7 @@ fun DialogBox(
                                 onDismissRequest()
                             },
                         text = "Cancel",
-                        color = DarkSapphire,
+                        color = LightModeDarkSapphire,
                         fontSize = 17.sp,
                         fontFamily = FontName,
                         fontWeight = FontWeight.Normal
@@ -161,7 +157,7 @@ fun UploadDialogBox(
 
                 Text(
                     text = "Phone Number",
-                    color = DarkSapphire,
+                    color = LightModeDarkSapphire,
                     fontSize = 18.sp,
                     fontFamily = FontName,
                     fontWeight = FontWeight.Normal

@@ -18,7 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.walletwizard.ui.theme.DarkSapphire
+import com.example.walletwizard.ui.theme.LightModeDarkSapphire
 
 @Preview
 @Composable
@@ -40,7 +40,7 @@ fun SearchBar(
     androidx.compose.material3.SearchBar(
         colors = SearchBarDefaults.colors(
             inputFieldColors = TextFieldDefaults.colors(
-                focusedTextColor = DarkSapphire,
+                focusedTextColor = LightModeDarkSapphire,
             )
         ),
         modifier = Modifier
@@ -68,7 +68,7 @@ fun SearchBar(
             Icon(
                 imageVector = Icons.Default.Search,
                 contentDescription = "Search Icon",
-                tint = DarkSapphire
+                tint = LightModeDarkSapphire
             )
         },
         trailingIcon = {
@@ -86,7 +86,7 @@ fun SearchBar(
                 Icon(
                     imageVector = Icons.Default.Clear,
                     contentDescription = null,
-                    tint = DarkSapphire
+                    tint = LightModeDarkSapphire
                 )
             }
         }

@@ -1,6 +1,7 @@
 package com.example.walletwizard
 
 import android.content.Context
+import android.os.Build
 import android.os.Environment
 import android.util.Log
 import android.widget.Toast
@@ -39,7 +40,13 @@ var items = listOf(
 
 fun generateReport(context:Context){
     val db = SqLiteDB(context)
-    val pdfPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+
+    val pdfPath = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+    }else{
+        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) // deprecated in Android sdk 29 i.e V 10
+    }
+
     val file = File(pdfPath,"WalletWizardReport.pdf")
     val writer = PdfWriter(FileOutputStream(file))
     val pdf = PdfDocument(writer)

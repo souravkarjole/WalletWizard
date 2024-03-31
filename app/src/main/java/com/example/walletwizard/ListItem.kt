@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.ripple.rememberRipple
@@ -35,7 +34,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.walletwizard.ui.theme.Cerise
-import com.example.walletwizard.ui.theme.DarkSapphire
+import com.example.walletwizard.ui.theme.LightModeDarkSapphire
 import com.example.walletwizard.ui.theme.FontName
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -46,7 +45,7 @@ fun ListItem(
     padding: Dp,
     size: Int = 40,
     text:String,
-    textColor:Color = DarkSapphire,
+    textColor:Color,
     fontSize: TextUnit = 16.sp,
     imageVector: ImageVector,
     color: Color,
@@ -129,5 +128,5 @@ fun ListItem(
 @Preview
 @Composable
 fun ssd(){
-    ListItem(padding = 10.dp, size = 36, text = "Sourav", fontSize = 16.sp, imageVector = Icons.Default.Home, color = Color(Cerise), onClick = {}, onLongClick = {})
+    ListItem(padding = 10.dp, size = 36, text = "Sourav", fontSize = 16.sp, imageVector = Icons.Default.Home, textColor = LightModeDarkSapphire, color = Color(Cerise), onClick = {}, onLongClick = {})
 }
