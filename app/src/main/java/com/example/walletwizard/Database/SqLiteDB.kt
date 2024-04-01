@@ -216,7 +216,7 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
                           "INNER JOIN $TABLE_CATEGORIES " +
                           "ON $TABLE_CATEGORIES.$COLUMN_KEY_ID = $TABLE_TRANSACTIONS.$COLUMN_CATEGORY_ID " +
                           "WHERE $TABLE_CATEGORIES.$COLUMN_TYPE = '$type' " +
-                          "AND $TABLE_TRANSACTIONS.$COLUMN_DATE LIKE '%$strDate' " +
+                          "AND $TABLE_TRANSACTIONS.$COLUMN_DATE LIKE '$strDate%' " +
                           "GROUP BY " +
                           "$TABLE_TRANSACTIONS.$COLUMN_CATEGORY_ID," +
                           "$TABLE_CATEGORIES.$COLUMN_NAME," +
@@ -261,7 +261,7 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
                           "INNER JOIN $TABLE_CATEGORIES " +
                           "ON $TABLE_CATEGORIES.$COLUMN_KEY_ID = $TABLE_TRANSACTIONS.$COLUMN_CATEGORY_ID " +
                           "WHERE $TABLE_CATEGORIES.$COLUMN_TYPE = '$type' " +
-                          "AND $TABLE_TRANSACTIONS.$COLUMN_DATE LIKE '$strDate%' " +
+                          "AND $TABLE_TRANSACTIONS.$COLUMN_DATE LIKE '%$strDate' " +
                           "GROUP BY " +
                           "$TABLE_TRANSACTIONS.$COLUMN_CATEGORY_ID," +
                           "$TABLE_CATEGORIES.$COLUMN_NAME," +
@@ -409,7 +409,7 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
                 "FROM $TABLE_TRANSACTIONS " +
                 "INNER JOIN $TABLE_CATEGORIES " +
                 "ON $TABLE_CATEGORIES.$COLUMN_KEY_ID = $TABLE_TRANSACTIONS.$COLUMN_CATEGORY_ID " +
-                "WHERE $TABLE_TRANSACTIONS.$COLUMN_DATE LIKE '%$strDate' " +
+                "WHERE $TABLE_TRANSACTIONS.$COLUMN_DATE LIKE '$strDate%' " +
                 "ORDER BY $TABLE_TRANSACTIONS.$COLUMN_DATE DESC, $TABLE_TRANSACTIONS.$COLUMN_TIMESTAMP DESC"
 
         val db = this.readableDatabase
@@ -461,7 +461,7 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
                 "FROM $TABLE_TRANSACTIONS " +
                 "INNER JOIN $TABLE_CATEGORIES " +
                 "ON $TABLE_CATEGORIES.$COLUMN_KEY_ID = $TABLE_TRANSACTIONS.$COLUMN_CATEGORY_ID " +
-                "WHERE $TABLE_TRANSACTIONS.$COLUMN_DATE LIKE '$strDate%' " +
+                "WHERE $TABLE_TRANSACTIONS.$COLUMN_DATE LIKE '%$strDate' " +
                 "ORDER BY $TABLE_TRANSACTIONS.$COLUMN_DATE DESC, $TABLE_TRANSACTIONS.$COLUMN_TIMESTAMP DESC"
 
         val db = this.readableDatabase
@@ -643,7 +643,7 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
             val dateIndex = i.getColumnIndex(COLUMN_DATE)
             val typeIndex = i.getColumnIndex(COLUMN_TYPE)
             val amountIndex = i.getColumnIndex(COLUMN_AMOUNT)
-            val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+            val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
             if(i.moveToFirst()){
                 do {
@@ -684,7 +684,7 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
             val dateIndex = i.getColumnIndex(COLUMN_DATE)
             val typeIndex = i.getColumnIndex(COLUMN_TYPE)
             val amountIndex = i.getColumnIndex(COLUMN_AMOUNT)
-            val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+            val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
             if(i.moveToFirst()){
                 do {
@@ -709,7 +709,7 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
     fun getWeeklyTotalIncomeAndExpense():MutableMap<String,DailyMonthlyYearlyTransactions>{
         var map = mutableMapOf<String,DailyMonthlyYearlyTransactions>()
 
-        val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+        val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         val currentDate = LocalDate.now()
 
         val calendar = Calendar.getInstance()
@@ -728,20 +728,19 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
             endDate = LocalDate.parse(endDateString, dateFormat)
             calendar.add(Calendar.DAY_OF_MONTH, 1)
 
-//            Log.e("TAG", "$startDateString: $endDateString", )
             val list = getAllWeeklyTransactions(startDateString,endDateString)
-            Log.e("TAG", "${list.size}: ", )
-//            for(i in list){
-//                val key = "$startDateString $endDateString"
-//                Log.e("TAG", "$key: ", )
-//                val weeklyTransaction = map[key] ?: DailyMonthlyYearlyTransactions(0,0)
-//
-//                if(i.type == "expense") {
-//                    weeklyTransaction.totalExpense += i.amount
-//                }else{
-//                    weeklyTransaction.totalIncome += i.amount
-//                }
-//            }
+            for(i in list){
+                val key = "$startDateString $endDateString"
+                val weeklyTransaction = map[key] ?: DailyMonthlyYearlyTransactions(0,0)
+
+                if(i.type == "expense") {
+                    weeklyTransaction.totalExpense += i.amount
+                }else{
+                    weeklyTransaction.totalIncome += i.amount
+                }
+
+                map[key] = weeklyTransaction
+            }
         } while (endDate.isBefore(currentDate))
 
         return map
