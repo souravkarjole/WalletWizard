@@ -52,7 +52,7 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
         private const val CREATE_TABLE_TRANSACTIONS = "CREATE TABLE $TABLE_TRANSACTIONS (" +
                 "$COLUMN_KEY_ID INTEGER PRIMARY KEY," +
                 "$COLUMN_CATEGORY_ID INTEGER," +
-                "$COLUMN_AMOUNT INTEGER," +
+                "$COLUMN_AMOUNT DOUBLE," +
                 "$COLUMN_DATE TEXT," +
                 "$COLUMN_TIMESTAMP TEXT," +
                 "FOREIGN KEY($COLUMN_CATEGORY_ID) REFERENCES $TABLE_CATEGORIES($COLUMN_KEY_ID))"
@@ -82,7 +82,7 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
         db.insert(TABLE_CATEGORIES,null,values)
     }
 
-    fun insertTransaction(id:Int,amount:Int,date:String,time:String){
+    fun insertTransaction(id:Int,amount:Double,date:String,time:String){
         val db = this.writableDatabase
         val values = ContentValues()
 
@@ -171,7 +171,7 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
                           "INNER JOIN $TABLE_CATEGORIES " +
                           "ON $TABLE_CATEGORIES.$COLUMN_KEY_ID = $TABLE_TRANSACTIONS.$COLUMN_CATEGORY_ID " +
                           "WHERE $TABLE_CATEGORIES.$COLUMN_TYPE = '$type' " +
-                          "AND $TABLE_TRANSACTIONS.$COLUMN_DATE LIKE '%-$strDate-%' " +
+                          "AND $TABLE_TRANSACTIONS.$COLUMN_DATE LIKE '$strDate-%' " +
                           "GROUP BY " +
                           "$TABLE_TRANSACTIONS.$COLUMN_CATEGORY_ID," +
                           "$TABLE_CATEGORIES.$COLUMN_NAME," +
@@ -193,7 +193,7 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
                 do{
                     val categoryId = i.getInt(categoryIdIndex)
                     val name = i.getString(nameIndex)
-                    val amount = i.getInt(amountIndex)
+                    val amount = i.getDouble(amountIndex)
                     val imageVectorID = i.getInt(imageVectorIndex)
                     val color = i.getLong(colorIndex)
 
@@ -238,7 +238,7 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
                 do{
                     val categoryId = i.getInt(categoryIdIndex)
                     val name = i.getString(nameIndex)
-                    val amount = i.getInt(amountIndex)
+                    val amount = i.getDouble(amountIndex)
                     val imageVectorID = i.getInt(imageVectorIndex)
                     val color = i.getLong(colorIndex)
 
@@ -283,7 +283,7 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
                 do{
                     val categoryId = i.getInt(categoryIdIndex)
                     val name = i.getString(nameIndex)
-                    val amount = i.getInt(amountIndex)
+                    val amount = i.getDouble(amountIndex)
                     val imageVectorID = i.getInt(imageVectorIndex)
                     val color = i.getLong(colorIndex)
 
@@ -329,7 +329,7 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
                 do{
                     val categoryId = i.getInt(categoryIdIndex)
                     val name = i.getString(nameIndex)
-                    val amount = i.getInt(amountIndex)
+                    val amount = i.getDouble(amountIndex)
                     val imageVectorID = i.getInt(imageVectorIndex)
                     val color = i.getLong(colorIndex)
 
@@ -357,7 +357,7 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
                 "FROM $TABLE_TRANSACTIONS " +
                 "INNER JOIN $TABLE_CATEGORIES " +
                 "ON $TABLE_CATEGORIES.$COLUMN_KEY_ID = $TABLE_TRANSACTIONS.$COLUMN_CATEGORY_ID " +
-                "WHERE $TABLE_TRANSACTIONS.$COLUMN_DATE LIKE '%-$strDate-%' " +
+                "WHERE $TABLE_TRANSACTIONS.$COLUMN_DATE LIKE '$strDate-%' " +
                 "ORDER BY $TABLE_TRANSACTIONS.$COLUMN_DATE DESC, $TABLE_TRANSACTIONS.$COLUMN_TIMESTAMP DESC"
 
         val db = this.readableDatabase
@@ -380,7 +380,7 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
                     val id = i.getInt(idIndex)
                     val categoryId = i.getInt(categoryIdIndex)
                     val name = i.getString(nameIndex)
-                    val amount = i.getInt(amountIndex)
+                    val amount = i.getDouble(amountIndex)
                     val type = i.getString(typeIndex)
                     val date = i.getString(dateIndex)
                     val time = i.getString(timeIndex)
@@ -432,7 +432,7 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
                     val id = i.getInt(idIndex)
                     val categoryId = i.getInt(categoryIdIndex)
                     val name = i.getString(nameIndex)
-                    val amount = i.getInt(amountIndex)
+                    val amount = i.getDouble(amountIndex)
                     val type = i.getString(typeIndex)
                     val date = i.getString(dateIndex)
                     val time = i.getString(timeIndex)
@@ -484,7 +484,7 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
                     val id = i.getInt(idIndex)
                     val categoryId = i.getInt(categoryIdIndex)
                     val name = i.getString(nameIndex)
-                    val amount = i.getInt(amountIndex)
+                    val amount = i.getDouble(amountIndex)
                     val type = i.getString(typeIndex)
                     val date = i.getString(dateIndex)
                     val time = i.getString(timeIndex)
@@ -536,7 +536,7 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
                     val id = i.getInt(idIndex)
                     val categoryId = i.getInt(categoryIdIndex)
                     val name = i.getString(nameIndex)
-                    val amount = i.getInt(amountIndex)
+                    val amount = i.getDouble(amountIndex)
                     val type = i.getString(typeIndex)
                     val date = i.getString(dateIndex)
                     val time = i.getString(timeIndex)
@@ -551,8 +551,7 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
         return list
     }
 
-
-    fun updateParticularTransaction(id:Int,categoryId:Int,amount:Int){
+    fun updateParticularTransaction(id:Int,categoryId:Int,amount:Double){
         val db = this.writableDatabase
 
         val values = ContentValues()
@@ -610,12 +609,12 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
                     val type = i.getString(typeIndex)
                     val date = i.getString(dateIndex)
 
-                    val dailyTransactions = map[date] ?: DailyMonthlyYearlyTransactions(0,0)
+                    val dailyTransactions = map[date] ?: DailyMonthlyYearlyTransactions(0.0,0.0)
 
                     if(type == "expense"){
-                        dailyTransactions.totalExpense += i.getInt(amountIndex)
+                        dailyTransactions.totalExpense += i.getDouble(amountIndex)
                     }else{
-                        dailyTransactions.totalIncome += i.getInt(amountIndex)
+                        dailyTransactions.totalIncome += i.getDouble(amountIndex)
                     }
 
                     map[date] = dailyTransactions
@@ -651,12 +650,12 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
                     val date = LocalDate.parse(i.getString(dateIndex),dateFormat)
 
                     val month = date.month.name.lowercase().replaceFirstChar { it.titlecase() }
-                    val dailyTransactions = map[month] ?: DailyMonthlyYearlyTransactions(0,0)
+                    val dailyTransactions = map[month] ?: DailyMonthlyYearlyTransactions(0.0,0.0)
 
                     if(type == "expense"){
-                        dailyTransactions.totalExpense += i.getInt(amountIndex)
+                        dailyTransactions.totalExpense += i.getDouble(amountIndex)
                     }else{
-                        dailyTransactions.totalIncome += i.getInt(amountIndex)
+                        dailyTransactions.totalIncome += i.getDouble(amountIndex)
                     }
 
                     map[month] = dailyTransactions
@@ -692,12 +691,12 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
                     val date = LocalDate.parse(i.getString(dateIndex),dateFormat)
 
                     val year = date.year
-                    val dailyTransactions = map[year.toString()] ?: DailyMonthlyYearlyTransactions(0,0)
+                    val dailyTransactions = map[year.toString()] ?: DailyMonthlyYearlyTransactions(0.0,0.0)
 
                     if(type == "expense"){
-                        dailyTransactions.totalExpense += i.getInt(amountIndex)
+                        dailyTransactions.totalExpense += i.getDouble(amountIndex)
                     }else{
-                        dailyTransactions.totalIncome += i.getInt(amountIndex)
+                        dailyTransactions.totalIncome += i.getDouble(amountIndex)
                     }
 
                     map[year.toString()] = dailyTransactions
@@ -731,7 +730,7 @@ class SqLiteDB(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DA
             val list = getAllWeeklyTransactions(startDateString,endDateString)
             for(i in list){
                 val key = "$startDateString $endDateString"
-                val weeklyTransaction = map[key] ?: DailyMonthlyYearlyTransactions(0,0)
+                val weeklyTransaction = map[key] ?: DailyMonthlyYearlyTransactions(0.0,0.0)
 
                 if(i.type == "expense") {
                     weeklyTransaction.totalExpense += i.amount
