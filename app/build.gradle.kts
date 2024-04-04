@@ -52,7 +52,10 @@ android {
 
 dependencies {
 
-
+    implementation ("com.airbnb.android:lottie-compose:6.4.0")
+    implementation ("com.google.android.gms:play-services-ads:23.0.0")
+    implementation ("com.google.accompanist:accompanist-systemuicontroller:0.27.0")
+    implementation ("androidx.datastore:datastore-preferences:1.0.0")
     implementation ("com.itextpdf:itext7-core:7.1.16")
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")

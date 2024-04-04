@@ -41,11 +41,12 @@ var items = listOf(
 fun generateReport(context:Context){
     val db = SqLiteDB(context)
 
-    val pdfPath = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
-    }else{
-        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) // deprecated in Android sdk 29 i.e V 10
-    }
+    val pdfPath =
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+        }else {
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) // deprecated in Android sdk 29 i.e V 10
+        }
 
     val file = File(pdfPath,"WalletWizardReport.pdf")
     val writer = PdfWriter(FileOutputStream(file))
@@ -184,7 +185,7 @@ fun addTableForWeekly(document: Document,context: Context){
         .setHorizontalAlignment(HorizontalAlignment.CENTER)
         .setWidth(400f)
 
-    val map = mutableMapOf<String,DailyMonthlyYearlyTransactions>()
+    val map = db.getWeeklyTotalIncomeAndExpense()
 
     table.addHeaderCell(createCellHeader("Sr.No"))
     table.addHeaderCell(createCellHeader("Start Date"))
@@ -194,7 +195,7 @@ fun addTableForWeekly(document: Document,context: Context){
 
     var index = 1
     for(m in map) {
-        val key = m.key.split(" ")
+        val key = m.key.split(' ')
         table.addCell(createCell("$index"))
         table.addCell(createCell(key[0]))
         table.addCell(createCell(key[1]))

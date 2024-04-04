@@ -1,6 +1,7 @@
 package com.example.walletwizard
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -83,6 +85,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalView
@@ -97,28 +100,40 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.airbnb.lottie.LottieComposition
+import com.airbnb.lottie.LottieProperty
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionResult
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieDynamicProperties
+import com.airbnb.lottie.compose.LottieDynamicProperty
+import com.airbnb.lottie.compose.rememberLottieComposition
+import com.airbnb.lottie.compose.rememberLottieDynamicProperties
+import com.airbnb.lottie.compose.rememberLottieDynamicProperty
 import com.example.walletwizard.Database.SqLiteDB
 import com.example.walletwizard.Model.CategoriesData
 import com.example.walletwizard.Model.PieData
 import com.example.walletwizard.Model.TransactionsData
+import com.example.walletwizard.Model.colorList
 import com.example.walletwizard.ui.theme.DarkModeDarkSapphire
-import com.example.walletwizard.ui.theme.DarkModeLightSapphire
-import com.example.walletwizard.ui.theme.DarkModeLightestSapphire
-import com.example.walletwizard.ui.theme.LightModeDarkSapphire
 import com.example.walletwizard.ui.theme.ExtraDarkTransparent
 import com.example.walletwizard.ui.theme.FontName
 import com.example.walletwizard.ui.theme.Green
-import com.example.walletwizard.ui.theme.LightModeLightAliceBlue
-import com.example.walletwizard.ui.theme.LightModeLightestSapphire
 import com.example.walletwizard.ui.theme.WalletWizardTheme
 import com.example.walletwizard.ui.theme.getColorPalette
-import com.example.walletwizard.ui.theme.observeDarkModeState
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.MobileAds
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -128,11 +143,20 @@ import java.util.Calendar
 import java.util.Locale
 
 class HomeScreen : ComponentActivity() {
+
+    companion object {
+        var TYPE = 0
+        var amountType = "expense"
+        var totalExpense = 0.0
+        var totalIncome = 0.0
+        var categoryList:List<TransactionsData> = mutableListOf()
+        var transactionList = mutableMapOf<String, List<TransactionsData>>()
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
+        MobileAds.initialize(this) {}
         super.onCreate(savedInstanceState)
         setContent {
             WalletWizardTheme {
-
                 Surface(
                     modifier = Modifier.fillMaxSize()
                 ) {
@@ -166,6 +190,12 @@ class HomeScreen : ComponentActivity() {
 fun NavigationDrawer(navController: NavController){
     var scope = rememberCoroutineScope()
     val colorPalette = getColorPalette(context = LocalContext.current)
+    val systemUiController = rememberSystemUiController()
+
+    LaunchedEffect(colorPalette) {
+        delay(100) // Delay for a short duration
+        systemUiController.setSystemBarsColor(color = colorPalette.surfaceColor) // Set system bar color
+    }
 
     val drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     var navigationItems = listOf("Daily","Weekly","Monthly","Yearly")
@@ -268,6 +298,7 @@ fun ScaffoldImplementation(
     Scaffold (
         containerColor = colorPalette.surfaceColor,
         topBar = {
+
             CenterAlignedTopAppBar(
                 colors = TopAppBarColors(
                     containerColor = colorPalette.surfaceColor,
@@ -433,14 +464,43 @@ fun ScaffoldImplementation(
         )
     }
 
+    val text = remember{ mutableStateOf("") }
+
+
     if(isSearchBarClicked.value){
-        SearchBar{
-            isSearchBarClicked.value = false
-        }
+        SearchBar(
+            onClick = {
+                isSearchBarClicked.value = false
+
+            },
+            onSearch = {
+
+            },
+            newtext = text,
+            onQueryChange = {newText->
+                text.value = newText
+            }
+        )
     }
 }
 
 
+@Composable
+fun BannerAds(modifier: Modifier,adId: String){
+    val colorPalette = getColorPalette(context = LocalContext.current)
+    Column(modifier = modifier.background(color = colorPalette.darkSapphire)) {
+        AndroidView(
+            modifier = Modifier.fillMaxWidth(),
+            factory = {context->
+                AdView(context).apply {
+                    setAdSize(AdSize.BANNER)
+                    adUnitId = adId
+                    loadAd(AdRequest.Builder().build())
+                }
+            }
+        )
+    }
+}
 @Composable
 fun Content(page:Int,index:Int,onTransactionItemClicked: (TransactionsData) -> Unit){
     val colorPalette = getColorPalette(context = LocalContext.current)
@@ -452,7 +512,6 @@ fun Content(page:Int,index:Int,onTransactionItemClicked: (TransactionsData) -> U
     val calendarTime = remember { mutableLongStateOf(calendar.timeInMillis) }
     val currIndex = remember { mutableIntStateOf(index) }
 
-
     // reset values
     if(index != currIndex.intValue){
         val newCalendar = Calendar.getInstance()
@@ -462,13 +521,18 @@ fun Content(page:Int,index:Int,onTransactionItemClicked: (TransactionsData) -> U
     }
 
     Column(Modifier.background(colorPalette.lightAliceSapphire)) {
+        BannerAds(modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(), adId = "ca-app-pub-3940256099942544/9214589741")
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 10.dp, end = 10.dp),
+                .padding(horizontal = 10.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
+
             IconButton(
                 onClick = {
                     when(index) {
@@ -561,8 +625,10 @@ fun Content(page:Int,index:Int,onTransactionItemClicked: (TransactionsData) -> U
         }
 
         if(page == 0) {
+            HomeScreen.TYPE = 0
             Categories(index,calendar)
         }else{
+            HomeScreen.TYPE = 1
             Transactions(index,calendar){data->
                 onTransactionItemClicked(data)
             }
@@ -573,14 +639,15 @@ fun Content(page:Int,index:Int,onTransactionItemClicked: (TransactionsData) -> U
 @Composable
 fun Categories(index:Int,calendar: Calendar){
     val context = LocalContext.current
+
     val db = SqLiteDB(context)
 
     var expenselist: List<TransactionsData> = mutableListOf()
     var incomelist: List<TransactionsData> = mutableListOf()
     var expensePieData = mutableListOf<PieData>()
     var incomePieData = mutableListOf<PieData>()
-    var totalExpense = 0
-    var totalIncome = 0
+    var totalExpense = 0.0
+    var totalIncome = 0.0
     val isExpense = remember {
         mutableStateOf(true)
     }
@@ -602,7 +669,7 @@ fun Categories(index:Int,calendar: Calendar){
             tempCalendar.timeInMillis = calendar.timeInMillis
 
             tempCalendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
-            val dateTimeFormatter = SimpleDateFormat("dd-MM-yyyy",Locale.getDefault())
+            val dateTimeFormatter = SimpleDateFormat("yyyy-MM-dd",Locale.getDefault())
             val firstDayOfWeek = dateTimeFormatter.format(tempCalendar.timeInMillis)
 
             tempCalendar.add(Calendar.DAY_OF_MONTH,6)
@@ -623,12 +690,12 @@ fun Categories(index:Int,calendar: Calendar){
         2 -> {
             expenselist = db.getMonthlyTransactions(
                 "expense",
-                String.format("%02d",(calendar.get(Calendar.MONTH)+1))
+                "${calendar.get(Calendar.YEAR)}-${String.format("%02d",(calendar.get(Calendar.MONTH)+1))}"
             )
 
             incomelist = db.getMonthlyTransactions(
                 "income",
-                String.format("%02d",(calendar.get(Calendar.MONTH)+1))
+                "${calendar.get(Calendar.YEAR)}-${String.format("%02d",(calendar.get(Calendar.MONTH)+1))}"
             )
         }
         3 -> {
@@ -644,6 +711,8 @@ fun Categories(index:Int,calendar: Calendar){
         }
     }
 
+
+
     expenselist.forEachIndexed { _, item ->
         totalExpense += item.amount
         expensePieData.add(PieData(item.name,item.amount.toLong(), Color(item.color)))
@@ -653,6 +722,10 @@ fun Categories(index:Int,calendar: Calendar){
         totalIncome += item.amount
         incomePieData.add(PieData(item.name,item.amount.toLong(), Color(item.color)))
     }
+
+    HomeScreen.amountType = if(isExpense.value) "expense" else "income"
+    HomeScreen.totalExpense = totalExpense
+    HomeScreen.totalIncome = totalIncome
 
     LazyColumn(
         modifier = Modifier
@@ -702,45 +775,37 @@ fun Categories(index:Int,calendar: Calendar){
 
 
             if(isExpense.value && expenselist.isEmpty()) {
-                Text(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 100.dp),
-                    text = "No expense\ntransactions found",
-                    fontFamily = FontName,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 16.sp,
-                    textAlign = TextAlign.Center,
-                    color = Color(0xFFB6B5B5)
+                NoTransactionFound(
+                    modifier = Modifier.padding(top = 20.dp).fillMaxSize(),
+                    raw = R.raw.no_result,
+                    text = "No expense\ntransactions found"
                 )
             }else if(!isExpense.value && incomelist.isEmpty()){
-                Text(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 100.dp),
-                    text = "No income\ntransactions found",
-                    fontFamily = FontName,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 16.sp,
-                    textAlign = TextAlign.Center,
-                    color = Color(0xFFB6B5B5)
+                NoTransactionFound(
+                    modifier = Modifier.padding(top = 20.dp).fillMaxSize(),
+                    raw = R.raw.no_result,
+                    text = "No income\ntransactions found"
                 )
             }
+
             if(isExpense.value){
+                HomeScreen.categoryList = expenselist
                 expenselist.forEachIndexed { index, item ->
                     ListCategoryItems(text = item.name, imageVector = ImageVector.vectorResource(item.imageVector), Color(item.color),
-                        item.amount.toLong(),totalExpense.toLong(),isExpense.value)
+                        item.amount.toString(),totalExpense.toString(),isExpense.value)
                 }
             }else{
+                HomeScreen.categoryList = incomelist
                 incomelist.forEachIndexed { index, item ->
                     ListCategoryItems(text = item.name, imageVector = ImageVector.vectorResource(item.imageVector), Color(item.color),
-                        item.amount.toLong(),totalIncome.toLong(),isExpense.value)
+                        item.amount.toString(),totalIncome.toString(),isExpense.value)
                 }
             }
 
         }
     }
 }
+
 
 @Composable
 fun Transactions(index:Int,calendar: Calendar,onTransactionItemClicked: (TransactionsData) -> Unit){
@@ -759,7 +824,7 @@ fun Transactions(index:Int,calendar: Calendar,onTransactionItemClicked: (Transac
             tempCalendar.timeInMillis = calendar.timeInMillis
 
             tempCalendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
-            val dateTimeFormatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+            val dateTimeFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
             val firstDayOfWeek = dateTimeFormatter.format(tempCalendar.timeInMillis)
 
             tempCalendar.add(Calendar.DAY_OF_MONTH, 6)
@@ -772,36 +837,29 @@ fun Transactions(index:Int,calendar: Calendar,onTransactionItemClicked: (Transac
         }
         2 -> {
             list = db.getAllMonthlyTransactions(
-                String.format("%02d", (calendar.get(Calendar.MONTH) + 1))
+                "${calendar.get(Calendar.YEAR)}-${String.format("%02d",(calendar.get(Calendar.MONTH)+1))}"
             )
 
         }
         3 -> {
             list = db.getAllYearlyTransactions(
-                String.format("%02d", (calendar.get(Calendar.YEAR)))
+                "${calendar.get(Calendar.YEAR)}-${String.format("%02d",(calendar.get(Calendar.MONTH)+1))}"
             )
         }
     }
 
     var currentDate = ""
     if(list.isEmpty()){
-        Column(modifier = Modifier
-            .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center) {
-            Text(
-                text = "No transactions found",
-                fontFamily = FontName,
-                fontWeight = FontWeight.Normal,
-                fontSize = 16.sp,
-                textAlign = TextAlign.Center,
-                color = Color(0xFFB6B5B5)
-            )
-        }
+        NoTransactionFound(
+            modifier = Modifier.fillMaxSize().padding(bottom = 80.dp),
+            raw = R.raw.no_result,
+            text = "No transactions found"
+        )
     }
 
     val itemDateList = mutableMapOf<String,List<TransactionsData>>()
     val itemsList = mutableListOf<TransactionsData>()
+
 
     list.forEachIndexed { index, transactionsData ->
         if (currentDate != transactionsData.date) {
@@ -821,6 +879,7 @@ fun Transactions(index:Int,calendar: Calendar,onTransactionItemClicked: (Transac
         }
     }
 
+    HomeScreen.transactionList = itemDateList
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -839,7 +898,7 @@ fun Transactions(index:Int,calendar: Calendar,onTransactionItemClicked: (Transac
                         imageVector = ImageVector.vectorResource(transactionsData.imageVector),
                         color = Color(transactionsData.color),
                         type = transactionsData.type,
-                        amount = transactionsData.amount.toLong(),
+                        amount = transactionsData.amount.toString(),
                         time = transactionsData.timestamp,
                         onClick = {
                             onTransactionItemClicked(transactionList[index])
@@ -855,7 +914,7 @@ fun Transactions(index:Int,calendar: Calendar,onTransactionItemClicked: (Transac
 fun LazyColumnHeader(strDate:String){
     val colorPalette = getColorPalette(context = LocalContext.current)
 
-    val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+    val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     val date = LocalDate.parse(strDate,dateFormat)
 
     val day = date.dayOfMonth
@@ -902,8 +961,8 @@ fun ListCategoryItems(
     text:String,
     imageVector: ImageVector,
     color: Color,
-    amount:Long,
-    totalAmount:Long,
+    amount:String,
+    totalAmount:String,
     isExpense:Boolean
 ){
     val colorPalette = getColorPalette(context = LocalContext.current)
@@ -974,7 +1033,7 @@ fun ListCategoryItems(
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     LinearProgressIndicator(
-                        progress = { (amount.div(totalAmount.toFloat())) },
+                        progress = { (amount.toFloat().div(totalAmount.toFloat())) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
@@ -1008,7 +1067,7 @@ fun ListTransactionItems(
     imageVector: ImageVector,
     color: Color,
     type:String,
-    amount:Long,
+    amount:String,
     time:String,
     onClick: () -> Unit
 ){
@@ -1106,40 +1165,22 @@ fun CreateTransaction(
     transactionsData: TransactionsData
 ){
     val colorPalette = getColorPalette(context = LocalContext.current)
-
-
-    val context = LocalContext.current
-    var name = transactionsData.name
-    val text =
-        remember {
-            mutableStateOf(
-                TextFieldValue(
-                    text = if(transactionsData.amount.toString() == "0") "" else transactionsData.amount.toString(),
-                    selection = TextRange(transactionsData.amount.toString().length)
-                )
-            )
-        }
-    val categoryIndex = remember { mutableIntStateOf(-1) }
-    val categoryId = remember { mutableIntStateOf(transactionsData.categoryId) }
-    val keyId = transactionsData.id
-    val type = transactionsData.type
-    val selectedItemIndex = remember { mutableIntStateOf(if(type.isEmpty() || type == "expense") 0 else 1) }
+    var categoryId = remember {
+        mutableIntStateOf(transactionsData.categoryId)
+    }
     val scope = rememberCoroutineScope()
     val bringIntoViewRequester = BringIntoViewRequester()
-    val focusManager = LocalFocusManager.current
-    val dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-    val timeFormatter = DateTimeFormatter.ofPattern("hh:mm a")
-    val db = SqLiteDB(context)
-
     val view = LocalView.current
+
+    val selectedItemIndex = remember { mutableIntStateOf(if(transactionsData.type.isEmpty() || transactionsData.type == "expense") 0 else 1) }
+    val selectedItemType = remember {
+        mutableStateOf(transactionsData.type)
+    }
+
     KeyboardDetection(view = view) {
         onClick()
     }
 
-    val focusRequester = remember{ FocusRequester() }
-    LaunchedEffect(focusRequester) {
-        focusRequester.requestFocus()
-    }
 
     Column(
         modifier = Modifier
@@ -1216,83 +1257,7 @@ fun CreateTransaction(
                 }
 
 
-                TextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 50.dp, end = 50.dp)
-                        .focusRequester(focusRequester)
-                        .onFocusEvent {
-                            if (it.isFocused) {
-                                scope.launch {
-                                    bringIntoViewRequester.bringIntoView()
-                                }
-                            }
-                        },
-                    value = text.value,
-                    onValueChange = { newtext ->
-                        text.value = newtext
-                    },
-                    textStyle = TextStyle.Default.copy(
-                        textAlign = TextAlign.Center,
-                        fontSize = 20.sp,
-                        fontFamily = FontName,
-                        fontWeight = FontWeight.Normal
-                    ),
-                    colors = TextFieldDefaults.colors(
-                        unfocusedTextColor = colorPalette.darkSapphire,
-                        focusedTextColor = colorPalette.darkSapphire,
-                        unfocusedContainerColor = Color.Transparent,
-                        focusedContainerColor = Color.Transparent,
-                        focusedIndicatorColor = colorPalette.lightAliceSapphire,
-                        unfocusedIndicatorColor = colorPalette.lightAliceSapphire
-                    ),
-                    placeholder = {
-                        Text(
-                            text = "Rs. 0",
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center,
-                            color = Color.LightGray,
-                            fontFamily = FontName,
-                            fontWeight = FontWeight.Normal
-                        )
-                    },
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Done
-                    ),
-
-                    keyboardActions = KeyboardActions(onDone = {
-
-                        if (categoryIndex.intValue == -1) {
-                            Toast.makeText(context, "Choose the category", Toast.LENGTH_SHORT)
-                                .show()
-                        } else if (text.value.text.isEmpty()) {
-                            Toast.makeText(context, "Textfield cannot be empty", Toast.LENGTH_SHORT)
-                                .show()
-                        } else {
-                            val regex = "^\\d+\\.?\\d+\$".toRegex()
-
-                            if (keyId != -1) {
-                                db.updateParticularTransaction(keyId, categoryId.intValue,text.value.text.toInt())
-
-                                focusManager.clearFocus()
-                            } else if (regex.matches(text.value.text)) {
-                                db.insertTransaction(
-                                    categoryId.intValue,
-                                    text.value.text.toInt(),
-                                    dateFormatter.format(LocalDate.now()),
-                                    timeFormatter.format(LocalTime.now())
-                                )
-
-                                focusManager.clearFocus()
-                            } else {
-                                Toast.makeText(context, "Input must be valid", Toast.LENGTH_SHORT)
-                                    .show()
-                            }
-                        }
-                    })
-                )
-
+                InputTextField(transactionsData,categoryId.intValue)
 
                 Spacer(modifier = Modifier.padding(top = 20.dp))
 
@@ -1303,28 +1268,25 @@ fun CreateTransaction(
                 }
 
 
-
                 key(list) {
-                    categoryIndex.intValue = -1
                     LazyRow(
                         modifier = Modifier
                     )
                     {
                         items(list.size) { index ->
                             val categoriesData = list[index]
-
-                            if (name == categoriesData.text) {
-                                categoryIndex.intValue = index
-                            }
+                            Log.e("TAG", "${categoriesData.text}: ",)
 
                             Spacer(modifier = Modifier.padding(3.dp))
                             Box(
                                 modifier = Modifier
                                     .clip(CircleShape)
                                     .background(
-                                        color = if (categoryIndex.intValue == index) Color(
-                                            categoriesData.color
-                                        ) else LightModeLightAliceBlue,
+                                        color =
+                                        if (
+                                            (categoryId.intValue == categoriesData.id && selectedItemType.value == categoriesData.type)
+                                        )
+                                            Color(categoriesData.color) else colorPalette.lightAliceSapphire,
                                     )
                             ) {
                                 ListItem(
@@ -1332,14 +1294,22 @@ fun CreateTransaction(
                                     padding = 5.dp,
                                     size = 22,
                                     text = categoriesData.text,
-                                    textColor = if (categoryIndex.intValue == index) Color.White else LightModeDarkSapphire,
+                                    textColor = if (
+                                        (categoryId.intValue == categoriesData.id && selectedItemType.value == categoriesData.type)
+                                    )
+                                        Color.White else colorPalette.darkSapphire,
                                     fontSize = 13.sp,
                                     imageVector = ImageVector.vectorResource(categoriesData.imageVector),
                                     color = Color(categoriesData.color),
                                     onClick = {
-                                        name = categoriesData.text
-                                        categoryIndex.intValue = index
                                         categoryId.intValue = categoriesData.id
+
+                                        Log.e("TAG", "${categoriesData.id}: ",)
+                                        if (categoriesData.type == "expense") {
+                                            selectedItemType.value = "expense"
+                                        } else {
+                                            selectedItemType.value = "income"
+                                        }
                                     },
                                     onLongClick = {}
                                 )
@@ -1359,11 +1329,120 @@ fun CreateTransaction(
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun InputTextField(transactionsData:TransactionsData,categoryId:Int){
+    val colorPalette = getColorPalette(context = LocalContext.current)
+
+    val scope = rememberCoroutineScope()
+    val bringIntoViewRequester = BringIntoViewRequester()
+
+    val focusRequester = remember{ FocusRequester() }
+    LaunchedEffect(focusRequester) {
+        focusRequester.requestFocus()
+    }
+
+    val context = LocalContext.current
+    val text =
+        remember {
+            mutableStateOf(
+                TextFieldValue(
+                    text = if(transactionsData.amount.toString() == "0.0") "" else transactionsData.amount.toString(),
+                    selection = TextRange(transactionsData.amount.toString().length)
+                )
+            )
+        }
+
+    val keyId = transactionsData.id
+    val focusManager = LocalFocusManager.current
+
+
+    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    val timeFormatter = DateTimeFormatter.ofPattern("hh:mm a")
+    val db = SqLiteDB(context)
+
+    TextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 50.dp, end = 50.dp)
+            .focusRequester(focusRequester)
+            .onFocusEvent {
+                if (it.isFocused) {
+                    scope.launch {
+                        bringIntoViewRequester.bringIntoView()
+                    }
+                }
+            },
+        value = text.value,
+        onValueChange = { newtext ->
+            text.value = newtext
+        },
+        textStyle = TextStyle.Default.copy(
+            textAlign = TextAlign.Center,
+            fontSize = 20.sp,
+            fontFamily = FontName,
+            fontWeight = FontWeight.Normal
+        ),
+        colors = TextFieldDefaults.colors(
+            unfocusedTextColor = colorPalette.darkSapphire,
+            focusedTextColor = colorPalette.darkSapphire,
+            unfocusedContainerColor = Color.Transparent,
+            focusedContainerColor = Color.Transparent,
+            focusedIndicatorColor = colorPalette.lightAliceSapphire,
+            unfocusedIndicatorColor = colorPalette.lightAliceSapphire
+        ),
+        placeholder = {
+            Text(
+                text = "Rs. 0",
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
+                color = Color.LightGray,
+                fontFamily = FontName,
+                fontWeight = FontWeight.Normal
+            )
+        },
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Number,
+            imeAction = ImeAction.Done
+        ),
+
+        keyboardActions = KeyboardActions(onDone = {
+            if (categoryId == -1) {
+                Toast.makeText(context, "Choose the category", Toast.LENGTH_SHORT)
+                    .show()
+            } else if (text.value.text.isEmpty()) {
+                Toast.makeText(context, "Textfield cannot be empty", Toast.LENGTH_SHORT)
+                    .show()
+            } else {
+                val regex = "^\\d+\\.?\\d+\$".toRegex()
+
+                if (keyId != -1) {
+                    db.updateParticularTransaction(keyId, categoryId,text.value.text.toDouble())
+
+                    focusManager.clearFocus()
+                } else if (regex.matches(text.value.text)) {
+                    db.insertTransaction(
+                        categoryId,
+                        text.value.text.toDouble(),
+                        dateFormatter.format(LocalDate.now()),
+                        timeFormatter.format(LocalTime.now())
+                    )
+
+                    focusManager.clearFocus()
+                } else {
+                    Toast.makeText(context, "Input must be valid", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            }
+        })
+    )
+}
+
 fun weeklyCalendar(calendar: Calendar): String {
     val tempCalendar = Calendar.getInstance()
     tempCalendar.timeInMillis = calendar.timeInMillis
 
-    val dateFormat = SimpleDateFormat("dd MMM, YYYY", Locale.getDefault())
+    val dateFormat = SimpleDateFormat("dd MMM, yyyy", Locale.getDefault())
 
     tempCalendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
 

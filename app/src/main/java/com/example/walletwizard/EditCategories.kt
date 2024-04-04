@@ -65,7 +65,6 @@ import kotlinx.coroutines.launch
 fun EditCategories(navController: NavController){
     val colorPalette = getColorPalette(context = LocalContext.current)
 
-
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -90,7 +89,10 @@ fun EditCategories(navController: NavController){
                             .padding(end = 6.dp)
                             .size(43.dp)
                             .wrapContentSize()
-                            .background(color = colorPalette.lightAliceSapphire, RoundedCornerShape(100.dp))
+                            .background(
+                                color = colorPalette.lightAliceSapphire,
+                                RoundedCornerShape(100.dp)
+                            )
 
                     ) {
                         IconButton(
@@ -112,7 +114,10 @@ fun EditCategories(navController: NavController){
                             .padding(start = 6.dp)
                             .size(43.dp)
                             .wrapContentSize()
-                            .background(color = colorPalette.lightAliceSapphire, RoundedCornerShape(100.dp))
+                            .background(
+                                color = colorPalette.lightAliceSapphire,
+                                RoundedCornerShape(100.dp)
+                            )
 
                     ) {
                         IconButton(
@@ -132,7 +137,10 @@ fun EditCategories(navController: NavController){
             )
         }
     ){paddingValues ->
-        Column(Modifier.padding(paddingValues).background(color = colorPalette.lightestSapphire)) {
+        Column(
+            Modifier
+                .padding(paddingValues)
+                .background(color = colorPalette.lightestSapphire)) {
             val pagerState = rememberPagerState(pageCount = {2})
             val showDialogBox = remember {
                 mutableIntStateOf(0)
@@ -250,8 +258,16 @@ fun EditCategories(navController: NavController){
 fun Expense(onClick: (Int) -> Unit,onLongClick: (Int) -> Unit){
     val colorPalette = getColorPalette(context = LocalContext.current)
 
-
     val list = expensesListData()
+
+    if(list.isEmpty()){
+        NoTransactionFound(
+            modifier = Modifier.fillMaxSize(),
+            raw = R.raw.no_result,
+            text = "No expense\ncategories found"
+        )
+    }
+
     LazyColumn(modifier = Modifier
         .padding(10.dp)
         .fillMaxSize()
@@ -281,6 +297,15 @@ fun Income(onClick: (Int) -> Unit,onLongClick: (Int) -> Unit){
     val colorPalette = getColorPalette(context = LocalContext.current)
 
     val list = incomeListData()
+
+    if(list.isEmpty()){
+        NoTransactionFound(
+            modifier = Modifier.fillMaxSize(),
+            raw = R.raw.no_result,
+            text = "No income\ncategories found"
+        )
+    }
+
     LazyColumn(modifier = Modifier
         .padding(10.dp)
         .fillMaxSize()
