@@ -101,6 +101,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -153,8 +154,12 @@ class HomeScreen : ComponentActivity() {
         var transactionList = mutableMapOf<String, List<TransactionsData>>()
     }
     override fun onCreate(savedInstanceState: Bundle?) {
-        MobileAds.initialize(this) {}
         super.onCreate(savedInstanceState)
+
+        MobileAds.initialize(this) {}
+        installSplashScreen()
+        actionBar?.hide()
+
         setContent {
             WalletWizardTheme {
                 Surface(
