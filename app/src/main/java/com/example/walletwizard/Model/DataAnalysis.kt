@@ -1,13 +1,13 @@
 package com.example.walletwizard.Model
 
 data class DailyMonthlyYearlyTransactions(
-    var totalExpense:Int,
-    var totalIncome:Int
+    var totalExpense:Double,
+    var totalIncome:Double
 )
 
 data class WeeklyTransactions(
     val startDate:String,
     val endDate:String,
-    val totalExpense: Int,
-    val totalIncome: Int
+    val totalExpense: Double,
+    val totalIncome: Double
 )

@@ -5,7 +5,7 @@ data class TransactionsData(
     val id:Int = -1,
     val categoryId:Int,
     val name:String,
-    val amount:Int,
+    val amount:Double,
     val type:String = "",
     val date:String = "",
     val timestamp:String = "",
@@ -16,7 +16,7 @@ data class TransactionsData(
         id = -1,
         categoryId = -1,
         name = "",
-        amount = 0,
+        amount = 0.0,
         imageVector = 0,
         color = 0
     )

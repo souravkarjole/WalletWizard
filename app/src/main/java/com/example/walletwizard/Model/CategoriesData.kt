@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 data class CategoriesData(
     val id:Int,
-    val text:String,
+    var text:String,
     val type:String,
     val imageVector: Int,
     val color: Long
